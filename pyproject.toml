@@ -3,6 +3,8 @@ name = "tz-calc"
 version = "0.1.0"
 description = ""
 authors = ["srwareham <srwareham@hotmail.com>"]
+license = "MIT"
+readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = "^3.10"
