@@ -1,24 +1,40 @@
+import warnings
 from typing import Optional
 
 import pytz
 import typer
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
+from pytz_deprecation_shim import PytzUsageWarning
 from tzlocal import get_localzone
 
-LOCALTIME = get_localzone().zone
+DEBUG = False
+
+
+def _local_timezone(debug=False):
+    if debug:
+        local_timezone = get_localzone().zone
+    else:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=PytzUsageWarning)
+            local_timezone = get_localzone().zone
+    return local_timezone
+
+
+LOCAL_TIMEZONE = _local_timezone(DEBUG)
 
 app = typer.Typer()
 
 
 @app.command()
 def duration(start_time: str, end_time: str,
-             start_tz: str = typer.Option(LOCALTIME), end_tz: Optional[str] = typer.Option(LOCALTIME)):
+             start_tz: str = typer.Option(LOCAL_TIMEZONE), end_tz: Optional[str] = typer.Option(LOCAL_TIMEZONE)):
     tz_duration(start_time, start_tz, end_time, end_tz)
 
 
 @app.command()
-def equivalent(base_time: str, base_tz: str = typer.Option(LOCALTIME), target_tz: Optional[str] = typer.Option(LOCALTIME)):
+def equivalent(base_time: str, base_tz: str = typer.Option(LOCAL_TIMEZONE),
+               target_tz: Optional[str] = typer.Option(LOCAL_TIMEZONE)):
     raise NotImplementedError("Will show equiavalent time from one tz to the next")
     # tz_duration(base_time, base_tz, target_time, target_tz)
 
@@ -48,10 +64,6 @@ def _get_timezone(input_string):
     except pytz.UnknownTimeZoneError:
         raise NotImplementedError("TODO: add city and US shorthand to timezone mapping")
     return timezone
-
-
-def _format_relativedelta(relativedelta):
-    pass
 
 
 if __name__ == "__main__":
